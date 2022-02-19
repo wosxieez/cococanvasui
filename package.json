@@ -1,0 +1,27 @@
+{
+  "name": "cocoui",
+  "version": "1.0.0",
+  "description": "cocoui base h5 canvas",
+  "private": true,
+  "scripts": {
+    "build": "webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wosxieez/cococanvasui.git"
+  },
+  "keywords": [],
+  "author": "xez",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/wosxieez/cococanvasui/issues"
+  },
+  "homepage": "https://github.com/wosxieez/cococanvasui#readme",
+  "devDependencies": {
+    "@babel/core": "^7.17.5",
+    "@babel/preset-env": "^7.16.11",
+    "babel-loader": "^8.2.3",
+    "webpack": "^5.69.1",
+    "webpack-cli": "^4.9.2"
+  }
+}
