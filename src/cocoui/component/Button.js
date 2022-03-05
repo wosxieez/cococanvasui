@@ -4,6 +4,8 @@ export default class Button extends UIComponent {
   constructor() {
     super()
 
-    console.log('hello this is button')
+    this._name = 'Button'
+    this._width = 70
+    this._height = 300
   }
 }

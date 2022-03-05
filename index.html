@@ -6,13 +6,25 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>cocoui</title>
+  <style type="text/css">
+    * {
+      margin: 0;
+    }
+  </style>
 </head>
 
 <body>
   <script type="text/javascript" src="./dist/cocoui.js"></script>
   <script type="text/javascript">
+
     const application = new cocoui.Application()
-    application.createChildren()
+    application.initialize()
+
+    const button = new cocoui.Button()
+    application.addChild(button)
+
+    console.log(button)
+
   </script>
 </body>
 
