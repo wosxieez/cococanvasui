@@ -19,11 +19,20 @@
 
     const application = new cocoui.Application()
     application.initialize()
+    console.log(application)
 
-    const button = new cocoui.Button()
-    application.addChild(button)
+    const uicomponent = new cocoui.UIComponent()
+    uicomponent.initialize()
 
-    console.log(button)
+    setTimeout(() => {
+      uicomponent.x = 100
+      uicomponent.x = 100
+      uicomponent.x = 100
+      uicomponent.x = 100
+      uicomponent.x = 100
+    }, 3000);
+
+    application.addChild(uicomponent)
 
   </script>
 </body>
