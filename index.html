@@ -14,26 +14,35 @@
 </head>
 
 <body>
+  <div style="margin: 10px;">
+    <button onclick="add()">add</button>
+    <button onclick="test()">move</button>
+  </div>
+
+
+
   <script type="text/javascript" src="./dist/cocoui.js"></script>
   <script type="text/javascript">
 
     const application = new cocoui.Application()
     application.initialize()
-    console.log(application)
 
     const uicomponent = new cocoui.UIComponent()
-    uicomponent.initialize()
-
-    setTimeout(() => {
-      uicomponent.x = 100
-      uicomponent.x = 100
-      uicomponent.x = 100
-      uicomponent.x = 100
-      uicomponent.x = 100
-    }, 3000);
-
     application.addChild(uicomponent)
 
+
+    function add() {
+      var button = new cocoui.Button()
+      button.x = Math.random() * 700
+      button.y = Math.random() * 500
+      button.label = 'Button' + button.x
+      application.addChild(button)
+    }
+
+    function test() {
+      uicomponent.y += 5
+      uicomponent.x += 5
+    }
   </script>
 </body>
 

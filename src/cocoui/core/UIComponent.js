@@ -4,17 +4,18 @@ export default class UIComponent {
   constructor() {
     this.name = 'UIComponent'
 
-    this._initialized = false
     this._application = null
     this._x = 0
     this._y = 0
-    this._width = 100
-    this._height = 100
+    this._width = 50
+    this._height = 50
 
     this.children = []
+    this.initialized = false
     this.invalidatePropertiesFlag = false // 属性失效
     this.invalidateDisplayListFlag = false // 显示列表失效
     this.invalidaetSkinFlag = false // 皮肤失效
+    this.invalidateRenderFlag = false // 渲染失效
     this.callLaterMethods = []
   }
 
@@ -33,6 +34,7 @@ export default class UIComponent {
   }
 
   set x(value) {
+    value = Math.ceil(value)
     if (this._x == value) return
 
     this._x = value
@@ -50,6 +52,7 @@ export default class UIComponent {
   }
 
   set y(value) {
+    value = Math.ceil(value)
     if (this._y == value) return
 
     this._y = value
@@ -106,10 +109,6 @@ export default class UIComponent {
     this.setChildrenApplication()
   }
 
-  get initialized() {
-    return this._initialized
-  }
-
   //---------------------------------------------------------------------------------------------------------------------
   //
   //	Life Cycle
@@ -117,14 +116,15 @@ export default class UIComponent {
   //---------------------------------------------------------------------------------------------------------------------
 
   initialize() {
-    if (this._initialized) return
+    if (this.initialized) return
 
     // Life Cycle
     this.createChildren()
     this.invalidatePropertiesInLifeCycle()
     this.invalidateDisplayListInLifeCycle()
     this.invalidateSkinInLifeCycle()
-    this._initialized = true
+
+    this.initialized = true
   }
 
   createChildren() {
@@ -141,7 +141,7 @@ export default class UIComponent {
     if (!this.invalidatePropertiesFlag) {
       this.invalidatePropertiesFlag = true
       this.callLaterInLifeCycle(this.validateProperties, 0).descript =
-        '[LifeCycle] validateProperties()'
+        '[core] validateProperties()'
     }
   }
   /**
@@ -151,7 +151,7 @@ export default class UIComponent {
     if (!this.invalidateDisplayListFlag) {
       this.invalidateDisplayListFlag = true
       this.callLaterInLifeCycle(this.validateDisplayList, 2).descript =
-        '[LifeCycle] validateDisplayList()'
+        '[core] validateDisplayList()'
     }
   }
   /**
@@ -161,19 +161,19 @@ export default class UIComponent {
     if (!this.invalidaetSkinFlag) {
       this.invalidaetSkinFlag = true
       this.callLaterInLifeCycle(this.validateSkin, 3).descript =
-        '[LifeCycle] validateSkin()'
+        '[core] validateSkin()'
     }
   }
 
   invalidateProperties() {
-    if (!this.invalidatePropertiesFlag && this._initialized) {
+    if (!this.invalidatePropertiesFlag && this.initialized) {
       this.invalidatePropertiesFlag = true
       this.callLater(this.validateProperties).descript = 'validateProperties()'
     }
   }
 
   invalidateDisplayList() {
-    if (!this.invalidateDisplayListFlag && this._initialized) {
+    if (!this.invalidateDisplayListFlag && this.initialized) {
       this.invalidateDisplayListFlag = true
       this.callLater(this.validateDisplayList).descript =
         'validateDisplayList()'
@@ -181,9 +181,16 @@ export default class UIComponent {
   }
 
   invalidateSkin() {
-    if (!this.invalidaetSkinFlag && this._initialized) {
+    if (!this.invalidaetSkinFlag && this.initialized) {
       this.invalidaetSkinFlag = true
       this.callLater(this.validateSkin).descript = 'validateSkin()'
+    }
+  }
+
+  invalidateRender() {
+    if (!this.invalidateRenderFlag && this.initialized) {
+      this.invalidateRenderFlag = true
+      this.callLater(this.validateRender).descript = '[core] validateRender()'
     }
   }
 
@@ -198,8 +205,8 @@ export default class UIComponent {
    */
   validateNow() {
     this.validateProperties()
-    this.validateSkin()
     this.validateDisplayList()
+    this.validateSkin()
   }
 
   /**
@@ -223,12 +230,22 @@ export default class UIComponent {
   }
 
   /**
-   * call drawSkin now
+   * call application invalidateRender now
    */
   validateSkin() {
     if (this.invalidaetSkinFlag) {
       this.invalidaetSkinFlag = false
-      this.drawSkin()
+      if (this.application) this.application.invalidateRender()
+    }
+  }
+
+  /**
+   * call render now
+   */
+  validateRender() {
+    if (this.invalidateRenderFlag) {
+      this.invalidateRenderFlag = false
+      this.render()
     }
   }
 
@@ -243,17 +260,34 @@ export default class UIComponent {
   }
 
   /**
-   * 更新显示列表
+   * update display list
    */
   updateDisplayList() {
     // override code here
   }
 
   /**
-   * 画皮肤
+   * render
    */
-  drawSkin() {
-    // override code here
+  render(context) {
+    if (!context) return
+
+    this.drawSkin(context)
+
+    var child
+    for (var i = 0; i < this.children.length; i++) {
+      child = this.children[i]
+      if (child instanceof UIComponent) child.render(context)
+    }
+  }
+
+  /**
+   * draw skin
+   */
+  drawSkin(context) {
+    context.lineWidth = 1
+    context.strokeStyle = '#000000'
+    context.strokeRect(this.x, this.y, this.width, this.height)
   }
 
   //---------------------------------------------------------------------------------------------------------------------
@@ -269,8 +303,7 @@ export default class UIComponent {
     var child
     for (var i = 0; i < this.children.length; i++) {
       child = this.children[i]
-      if (child instanceof UIComponent)
-        UIComponent(child).application = application
+      if (child instanceof UIComponent) child.application = application
     }
   }
 

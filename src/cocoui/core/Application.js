@@ -10,13 +10,19 @@ export default class Application extends UIComponent {
     this._height = 600
 
     this.invalidateCallLaterFlag = false
-    this.rendererTotalTime = 0
+    this.invalidateRenderFlag = false
   }
 
   initialize() {
-    super.initialize()
+    const canvas = document.createElement('canvas')
+    canvas.width = this.width
+    canvas.height = this.height
+    document.body.appendChild(canvas)
 
     this.application = this
+    this.context = canvas.getContext('2d')
+
+    super.initialize()
   }
 
   //---------------------------------------------------------------------------------------------------------------------
@@ -24,24 +30,6 @@ export default class Application extends UIComponent {
   // Call Later Code
   //
   //---------------------------------------------------------------------------------------------------------------------
-
-  /**
-   *
-   * 下一帧执行函数
-   *
-   * @param method 函数
-   * @param args 函数参数
-   *
-   */
-  addedChildcallLater(method, ...args) {
-    var clm = new CallLaterMethod()
-    clm.method = method
-    clm.args = args
-    clm.caller = this
-
-    this.pushCallLaterMethodToApplicationCallLaterMethods(clm)
-    return clm
-  }
 
   pushCallLaterMethodToApplicationCallLaterMethods(callLaterMethod) {
     this.callLaterMethods.push(callLaterMethod)
@@ -61,7 +49,7 @@ export default class Application extends UIComponent {
       this.invalidateCallLaterFlag = true
       setTimeout(() => {
         this.validateCallLater()
-      }, 1000)
+      }, 0)
     }
   }
 
@@ -72,8 +60,6 @@ export default class Application extends UIComponent {
   }
 
   updateCallLater() {
-    console.log('updateCallLater')
-
     if (this.callLaterMethods.length == 0) return
     var callLaterMethod
     while (this.callLaterMethods.length > 0) {
@@ -84,5 +70,16 @@ export default class Application extends UIComponent {
 
     // now invalidate flag false
     this.invalidateCallLaterFlag = false
+  }
+
+  //---------------------------------------------------------------------------------------------------------------------
+  //
+  // Cycle Methods
+  //
+  //---------------------------------------------------------------------------------------------------------------------
+
+  render() {
+    this.context.clearRect(this.x, this.y, this.width, this.height)
+    super.render(this.context)
   }
 }
