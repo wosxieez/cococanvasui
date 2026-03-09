@@ -1,4 +1,5 @@
-import UIComponent from '../core/UIComponent'
+import UIComponent from './UIComponent'
+import InteractionManager from './InteractionManager'
 
 export default class Application extends UIComponent {
   constructor() {
@@ -8,6 +9,7 @@ export default class Application extends UIComponent {
 
     this._width = 800
     this._height = 600
+    this._backgroundColor = '#ffffff'
 
     this.invalidateCallLaterFlag = false
     this.invalidateRenderFlag = false
@@ -17,12 +19,55 @@ export default class Application extends UIComponent {
     const canvas = document.createElement('canvas')
     canvas.width = this.width
     canvas.height = this.height
+    canvas.style.display = 'block'
+    canvas.style.backgroundColor = this._backgroundColor
     document.body.appendChild(canvas)
+    document.body.style.margin = '0'
+    document.body.style.overflow = 'hidden'
 
     this.application = this
     this.context = canvas.getContext('2d')
 
+    // 初始化交互管理器
+    this.interactionManager = new InteractionManager(this)
+
     super.initialize()
+
+    // 开始渲染循环
+    this._startRenderLoop()
+  }
+
+  //---------------------------------------------------------------------------------------------------------------------
+  //
+  // Properties
+  //
+  //---------------------------------------------------------------------------------------------------------------------
+
+  get backgroundColor() {
+    return this._backgroundColor
+  }
+
+  set backgroundColor(value) {
+    if (this._backgroundColor === value) return
+    this._backgroundColor = value
+    if (this.context && this.context.canvas) {
+      this.context.canvas.style.backgroundColor = value
+    }
+    this.invalidateRender()
+  }
+
+  //---------------------------------------------------------------------------------------------------------------------
+  //
+  // Render Loop
+  //
+  //---------------------------------------------------------------------------------------------------------------------
+
+  _startRenderLoop() {
+    const loop = () => {
+      this.render(this.context)
+      requestAnimationFrame(loop)
+    }
+    requestAnimationFrame(loop)
   }
 
   //---------------------------------------------------------------------------------------------------------------------
@@ -37,13 +82,10 @@ export default class Application extends UIComponent {
   }
 
   pushCallLaterMethodsToApplicationCallLaterMethods() {
-    //	UIComponent need push callLater methods to Application
-    //	Application self not need
+    // UIComponent need push callLater methods to Application
+    // Application self not need
   }
 
-  /**
-   * 延迟调用失效
-   */
   invalidateCallLater() {
     if (this.initialized && !this.invalidateCallLaterFlag) {
       this.invalidateCallLaterFlag = true
@@ -60,15 +102,20 @@ export default class Application extends UIComponent {
   }
 
   updateCallLater() {
-    if (this.callLaterMethods.length == 0) return
-    var callLaterMethod
+    if (this.callLaterMethods.length === 0) return
+
+    // 按优先级排序
+    this.callLaterMethods.sort((a, b) => a.priority - b.priority)
+
+    let callLaterMethod
     while (this.callLaterMethods.length > 0) {
       callLaterMethod = this.callLaterMethods.shift()
-      console.log(callLaterMethod.caller.name, callLaterMethod.descript)
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(callLaterMethod.caller.name, callLaterMethod.descript)
+      }
       callLaterMethod.method.apply(callLaterMethod.caller, callLaterMethod.args)
     }
 
-    // now invalidate flag false
     this.invalidateCallLaterFlag = false
   }
 
@@ -78,8 +125,16 @@ export default class Application extends UIComponent {
   //
   //---------------------------------------------------------------------------------------------------------------------
 
-  render() {
-    this.context.clearRect(this.x, this.y, this.width, this.height)
-    super.render(this.context)
+  render(context) {
+    // 清空画布
+    context.clearRect(0, 0, this.width, this.height)
+
+    // 绘制背景
+    if (this._backgroundColor) {
+      context.fillStyle = this._backgroundColor
+      context.fillRect(0, 0, this.width, this.height)
+    }
+
+    super.render(context)
   }
 }
